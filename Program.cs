@@ -4,22 +4,9 @@ using UpdateHub;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSignalR();
 
-// CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll",
-        builder =>
-        {
-            builder.AllowAnyOrigin()
-                   .AllowAnyHeader()
-                   .AllowAnyMethod();
-        });
-});
+builder.Services.AddCors();
 
 var app = builder.Build();
-
-// CORS
-app.UseCors("AllowAll");
 
 app.MapHub<ClientHub>("/Hub");
 app.MapPost("/", async (GlobalUpdate globalUpdate, IHubContext<ClientHub> hub) => 
@@ -31,5 +18,15 @@ app.MapPost("/Group", async (GroupUpdate groupUpdate, IHubContext<ClientHub> hub
 app.MapPost("/User", async (UserUpdate userUpdate, IHubContext<ClientHub> hub) => 
     await hub.Clients.User(userUpdate.UserId)
         .SendAsync(userUpdate.MethodName, userUpdate.Message, userUpdate.Data));
+
+app.UseCors
+(
+    policyBuilder =>
+        policyBuilder
+            .WithOrigins("http://localhost:3000", "https://localhost:3000", "https://localhost:7226", "http://localhost:5131")
+            .AllowCredentials()
+            .AllowAnyHeader()
+            .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE")
+);
 
 app.Run();
