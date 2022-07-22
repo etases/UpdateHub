@@ -4,7 +4,22 @@ using UpdateHub;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSignalR();
 
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyHeader()
+                   .AllowAnyMethod();
+        });
+});
+
 var app = builder.Build();
+
+// CORS
+app.UseCors("AllowAll");
 
 app.MapHub<ClientHub>("/Hub");
 app.MapPost("/", async (GlobalUpdate globalUpdate, IHubContext<ClientHub> hub) => 
